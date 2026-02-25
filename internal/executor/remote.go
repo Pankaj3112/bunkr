@@ -15,7 +15,8 @@ import (
 )
 
 type RemoteExecutor struct {
-	client *ssh.Client
+	client  *ssh.Client
+	useSudo bool
 }
 
 func NewRemoteExecutor(target string) (*RemoteExecutor, error) {
@@ -42,7 +43,18 @@ func NewRemoteExecutor(target string) (*RemoteExecutor, error) {
 		return nil, fmt.Errorf("failed to connect to %s: %w", target, err)
 	}
 
-	return &RemoteExecutor{client: client}, nil
+	return &RemoteExecutor{client: client, useSudo: user != "root"}, nil
+}
+
+func (r *RemoteExecutor) wrapCmd(cmd string) string {
+	if r.useSudo {
+		return fmt.Sprintf("sudo sh -c %s", shellescape(cmd))
+	}
+	return cmd
+}
+
+func shellescape(s string) string {
+	return "'" + strings.ReplaceAll(s, "'", "'\"'\"'") + "'"
 }
 
 func (r *RemoteExecutor) Run(_ context.Context, cmd string) (string, error) {
@@ -56,7 +68,7 @@ func (r *RemoteExecutor) Run(_ context.Context, cmd string) (string, error) {
 	session.Stdout = &stdout
 	session.Stderr = &stderr
 
-	if err := session.Run(cmd); err != nil {
+	if err := session.Run(r.wrapCmd(cmd)); err != nil {
 		return "", fmt.Errorf("%w: %s", err, stderr.String())
 	}
 	return stdout.String(), nil
@@ -77,7 +89,7 @@ func (r *RemoteExecutor) WriteFile(_ context.Context, path string, content []byt
 	var stderr bytes.Buffer
 	session.Stderr = &stderr
 
-	if err := session.Run(cmd); err != nil {
+	if err := session.Run(r.wrapCmd(cmd)); err != nil {
 		return fmt.Errorf("failed to write %s: %w: %s", path, err, stderr.String())
 	}
 	return nil
@@ -94,7 +106,7 @@ func (r *RemoteExecutor) ReadFile(_ context.Context, path string) ([]byte, error
 	session.Stdout = &stdout
 	session.Stderr = &stderr
 
-	if err := session.Run(fmt.Sprintf("cat %s", path)); err != nil {
+	if err := session.Run(r.wrapCmd(fmt.Sprintf("cat %s", path))); err != nil {
 		return nil, fmt.Errorf("failed to read %s: %w: %s", path, err, stderr.String())
 	}
 	return stdout.Bytes(), nil
