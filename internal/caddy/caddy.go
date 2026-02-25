@@ -56,7 +56,7 @@ func RemoveBlock(ctx context.Context, exec executor.Executor, name string) error
 }
 
 func Reload(ctx context.Context, exec executor.Executor) error {
-	_, err := exec.Run(ctx, "caddy reload --config /etc/caddy/Caddyfile")
+	_, err := exec.Run(ctx, "systemctl reload caddy")
 	return err
 }
 
