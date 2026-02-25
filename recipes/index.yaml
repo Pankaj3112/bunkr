@@ -1,9 +1,9 @@
 - name: uptime-kuma
   description: Self-hosted uptime monitoring
-  version: "1.23.11"
+  version: "2.1.3"
 - name: ghost
   description: Professional publishing platform
-  version: "5.82.2"
+  version: "6.19.2"
 - name: plausible
   description: Privacy-friendly web analytics
-  version: "2.0.0"
+  version: "2.1.4"

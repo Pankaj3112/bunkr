@@ -1,7 +1,7 @@
 name: plausible
-version: "2.0.0"
+version: "2.1.4"
 description: Privacy-friendly web analytics
-image: ghcr.io/plausible/community-edition:v2.0.0
+image: plausible/community-edition:v2.1.4
 
 prompts:
   - key: DOMAIN
