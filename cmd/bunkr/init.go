@@ -4,7 +4,9 @@ package main
 import (
 	"context"
 	"fmt"
+	"net"
 	"runtime"
+	"strings"
 	"time"
 
 	"github.com/pankajbeniwal/bunkr/internal/executor"
@@ -53,6 +55,7 @@ var initCmd = &cobra.Command{
 		}
 
 		ui.Result("Server hardened successfully!")
+		ui.HardeningSummary(extractHost(onFlag), sshPortFlag)
 		return nil
 	},
 }
@@ -60,6 +63,19 @@ var initCmd = &cobra.Command{
 func init() {
 	initCmd.Flags().IntVar(&sshPortFlag, "ssh-port", 2222, "SSH port to configure")
 	rootCmd.AddCommand(initCmd)
+}
+
+// extractHost returns just the hostname/IP from a target string like "root@167.71.50.23:22".
+func extractHost(target string) string {
+	// Strip user@
+	if idx := strings.Index(target, "@"); idx != -1 {
+		target = target[idx+1:]
+	}
+	// Strip :port
+	if host, _, err := net.SplitHostPort(target); err == nil {
+		return host
+	}
+	return target
 }
 
 func newExecutor() (executor.Executor, error) {

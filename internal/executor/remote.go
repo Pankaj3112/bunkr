@@ -40,10 +40,40 @@ func NewRemoteExecutor(target string) (*RemoteExecutor, error) {
 
 	client, err := ssh.Dial("tcp", host, config)
 	if err != nil {
+		// Try fallback: if connecting as root on default port, try bunkr@host:2222
+		if fallbackClient, ok := tryHardenedFallback(host, config, authMethods); ok {
+			return fallbackClient, nil
+		}
 		return nil, fmt.Errorf("failed to connect to %s: %w", target, err)
 	}
 
 	return &RemoteExecutor{client: client, useSudo: user != "root"}, nil
+}
+
+// tryHardenedFallback attempts to connect as bunkr@host:2222 when the initial
+// connection fails, since the server may have been hardened by bunkr.
+func tryHardenedFallback(host string, _ *ssh.ClientConfig, authMethods []ssh.AuthMethod) (*RemoteExecutor, bool) {
+	hostname, port, _ := net.SplitHostPort(host)
+
+	// Only try fallback from default port 22
+	if port != "22" {
+		return nil, false
+	}
+
+	fallbackHost := net.JoinHostPort(hostname, "2222")
+	fallbackConfig := &ssh.ClientConfig{
+		User:            "bunkr",
+		Auth:            authMethods,
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+	}
+
+	client, err := ssh.Dial("tcp", fallbackHost, fallbackConfig)
+	if err != nil {
+		return nil, false
+	}
+
+	fmt.Printf("\n  %s\n\n", "Server is hardened — connected as bunkr on port 2222")
+	return &RemoteExecutor{client: client, useSudo: true}, true
 }
 
 func (r *RemoteExecutor) wrapCmd(cmd string) string {

@@ -40,14 +40,14 @@ func Run(ctx context.Context, exec executor.Executor, s *state.State, sshPort in
 
 	for _, step := range steps {
 		if s.Hardening.Steps[step.Name] {
-			ui.Skip(step.Label + " already configured")
+			ui.Skip(step.Label + " — already configured")
 			results = append(results, StepResult{Name: step.Name, Skipped: true})
 			continue
 		}
 
 		applied, err := step.Check(ctx, exec)
 		if err == nil && applied {
-			ui.Skip(step.Label + " already configured")
+			ui.Skip(step.Label + " — already configured")
 			s.Hardening.Steps[step.Name] = true
 			results = append(results, StepResult{Name: step.Name, Skipped: true})
 			continue

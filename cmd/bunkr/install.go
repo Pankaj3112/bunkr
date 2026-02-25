@@ -79,6 +79,9 @@ var installCmd = &cobra.Command{
 			}
 			s.Hardening.AppliedAt = time.Now()
 			s.Hardening.SSHPort = sshPortFlag
+
+			ui.Result("Server hardened successfully!")
+			ui.HardeningSummary(extractHost(onFlag), sshPortFlag)
 		}
 
 		// Docker
