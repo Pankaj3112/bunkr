@@ -5,16 +5,26 @@ set -e
 # Usage: curl -fsSL https://raw.githubusercontent.com/pankajbeniwal/bunkr/main/scripts/install.sh | sh
 
 REPO="pankajbeniwal/bunkr"
-INSTALL_DIR="/usr/local/bin"
-CONFIG_DIR="/etc/bunkr"
 
 main() {
-    # Check for Linux
+    # Detect OS
     OS=$(uname -s | tr '[:upper:]' '[:lower:]')
-    if [ "$OS" != "linux" ]; then
-        echo "Error: bunkr only supports Linux (got: $OS)"
-        exit 1
-    fi
+    case "$OS" in
+        linux)
+            INSTALL_DIR="/usr/local/bin"
+            ;;
+        darwin)
+            INSTALL_DIR="/usr/local/bin"
+            ;;
+        mingw*|msys*|cygwin*|windows*)
+            OS="windows"
+            INSTALL_DIR="$HOME/bin"
+            ;;
+        *)
+            echo "Error: unsupported OS: $OS"
+            exit 1
+            ;;
+    esac
 
     # Detect architecture
     ARCH=$(uname -m)
@@ -52,18 +62,16 @@ main() {
 
     # Install
     chmod +x "$TMP"
+    mkdir -p "$INSTALL_DIR"
     mv "$TMP" "${INSTALL_DIR}/bunkr"
-
-    # Create config directory
-    mkdir -p "$CONFIG_DIR"
 
     echo ""
     echo "bunkr ${LATEST} installed to ${INSTALL_DIR}/bunkr"
     echo ""
     echo "Get started:"
-    echo "  bunkr init                    # Harden a server"
-    echo "  bunkr install uptime-kuma     # Install an app"
-    echo "  bunkr list                    # See available recipes"
+    echo "  bunkr init --on root@<ip>              # Harden a remote server"
+    echo "  bunkr install uptime-kuma --on root@<ip>  # Install an app"
+    echo "  bunkr list                              # See available recipes"
     echo ""
 }
 
