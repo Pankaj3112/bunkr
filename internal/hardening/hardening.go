@@ -3,6 +3,7 @@ package hardening
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/pankajbeniwal/bunkr/internal/executor"
 	"github.com/pankajbeniwal/bunkr/internal/state"
@@ -34,9 +35,30 @@ func Steps(sshPort int) []Step {
 	}
 }
 
+func waitForAptLock(ctx context.Context, exec executor.Executor) error {
+	// Fresh VPS often has unattended-upgrades running apt on first boot.
+	// Check if lock is held, and if so, wait up to 120 seconds.
+	_, err := exec.Run(ctx, "fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1")
+	if err != nil {
+		// Lock is not held, no need to wait
+		return nil
+	}
+	ui.Info("Waiting for package manager to finish...")
+	_, err = exec.Run(ctx, "for i in $(seq 1 60); do fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1 || exit 0; sleep 2; done; exit 1")
+	if err != nil {
+		return fmt.Errorf("timed out waiting for apt lock (another package manager is running)")
+	}
+	return nil
+}
+
 func Run(ctx context.Context, exec executor.Executor, s *state.State, sshPort int) ([]StepResult, error) {
 	steps := Steps(sshPort)
 	var results []StepResult
+
+	// Wait for any existing apt operations to finish (common on fresh VPS)
+	if err := waitForAptLock(ctx, exec); err != nil {
+		return nil, err
+	}
 
 	for _, step := range steps {
 		if s.Hardening.Steps[step.Name] {
