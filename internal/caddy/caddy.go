@@ -81,10 +81,26 @@ func Reload(ctx context.Context, exec executor.Executor) error {
 	return err
 }
 
+func waitForAptLock(ctx context.Context, exec executor.Executor) error {
+	_, err := exec.Run(ctx, "fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1")
+	if err != nil {
+		return nil // lock not held
+	}
+	_, err = exec.Run(ctx, "for i in $(seq 1 60); do fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1 || exit 0; sleep 2; done; exit 1")
+	if err != nil {
+		return fmt.Errorf("timed out waiting for apt lock")
+	}
+	return nil
+}
+
 func EnsureInstalled(ctx context.Context, exec executor.Executor) error {
 	_, err := exec.Run(ctx, "which caddy")
 	if err == nil {
 		return nil
+	}
+
+	if err := waitForAptLock(ctx, exec); err != nil {
+		return err
 	}
 
 	commands := []string{
