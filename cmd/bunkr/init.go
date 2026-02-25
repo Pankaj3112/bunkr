@@ -4,6 +4,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"runtime"
 	"time"
 
 	"github.com/pankajbeniwal/bunkr/internal/executor"
@@ -66,8 +67,8 @@ func newExecutor() (executor.Executor, error) {
 }
 
 func requireRemote() error {
-	if onFlag == "" {
-		return fmt.Errorf("--on flag is required (e.g., --on root@167.71.50.23)\n\nbunkr runs commands on a remote Linux server via SSH.\nIt should not be run locally on your machine.")
+	if onFlag == "" && runtime.GOOS != "linux" {
+		return fmt.Errorf("--on flag is required on %s (e.g., --on root@167.71.50.23)\n\nbunkr server commands run on Linux. Use --on to target a remote server,\nor run bunkr directly on a Linux machine.", runtime.GOOS)
 	}
 	return nil
 }
