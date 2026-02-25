@@ -18,7 +18,7 @@ func FirewallStep(sshPort int) Step {
 		},
 		Apply: func(ctx context.Context, exec executor.Executor) error {
 			cmds := []string{
-				"apt-get install -y ufw",
+				"apt-get -o DPkg::Lock::Timeout=120 install -y ufw",
 				"ufw default deny incoming",
 				"ufw default allow outgoing",
 				"ufw allow 22/tcp",
