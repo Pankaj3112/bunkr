@@ -13,7 +13,7 @@ func SSHStep(port int) Step {
 		Name:  "ssh_hardening",
 		Label: "SSH hardened",
 		Check: func(ctx context.Context, exec executor.Executor) (bool, error) {
-			_, err := exec.Run(ctx, "grep -q '# bunkr-managed' /etc/ssh/sshd_config")
+			_, err := exec.Run(ctx, "test -f /etc/ssh/sshd_config.d/99-bunkr.conf")
 			return err == nil, err
 		},
 		Apply: func(ctx context.Context, exec executor.Executor) error {
@@ -22,41 +22,59 @@ func SSHStep(port int) Step {
 				return err
 			}
 
-			// Apply settings directly to sshd_config (sshd_config.d is not always included)
-			cmds := []string{
-				fmt.Sprintf("sed -i 's/^#*Port .*/Port %d/' /etc/ssh/sshd_config", port),
-				"sed -i 's/^#*PermitRootLogin .*/PermitRootLogin no/' /etc/ssh/sshd_config",
-				"sed -i 's/^#*PasswordAuthentication .*/PasswordAuthentication no/' /etc/ssh/sshd_config",
-				"sed -i 's/^#*PubkeyAuthentication .*/PubkeyAuthentication yes/' /etc/ssh/sshd_config",
-				"sed -i 's/^#*X11Forwarding .*/X11Forwarding no/' /etc/ssh/sshd_config",
-				"sed -i 's/^#*MaxAuthTries .*/MaxAuthTries 3/' /etc/ssh/sshd_config",
-				// Add AllowUsers if not present
-				"grep -q '^AllowUsers' /etc/ssh/sshd_config || echo 'AllowUsers bunkr' >> /etc/ssh/sshd_config",
-				// Mark as managed
-				"grep -q '# bunkr-managed' /etc/ssh/sshd_config || echo '# bunkr-managed' >> /etc/ssh/sshd_config",
-			}
-			for _, cmd := range cmds {
-				if _, err := exec.Run(ctx, cmd); err != nil {
-					return err
-				}
+			// Apply settings via sshd_config.d drop-in (included by default on modern Ubuntu)
+			config := fmt.Sprintf(`Port %d
+PermitRootLogin no
+PasswordAuthentication no
+PubkeyAuthentication yes
+X11Forwarding no
+MaxAuthTries 3
+AllowUsers bunkr
+# bunkr-managed`, port)
+
+			if err := exec.WriteFile(ctx, "/etc/ssh/sshd_config.d/99-bunkr.conf", []byte(config), 0644); err != nil {
+				return err
 			}
 
 			// Validate config before restarting
 			if _, err := exec.Run(ctx, "sshd -t"); err != nil {
-				// Restore backup if config is invalid
-				exec.Run(ctx, "cp /etc/ssh/sshd_config.bak /etc/ssh/sshd_config")
-				return fmt.Errorf("invalid SSH config, restored backup: %w", err)
+				exec.Run(ctx, "rm -f /etc/ssh/sshd_config.d/99-bunkr.conf")
+				return fmt.Errorf("invalid SSH config: %w", err)
 			}
 
-			if _, err := exec.Run(ctx, "systemctl restart sshd 2>/dev/null || systemctl restart ssh"); err != nil {
-				return err
+			// Handle systemd socket activation (Ubuntu 24.04+)
+			// If ssh.socket exists, we must override it to change the port
+			if _, err := exec.Run(ctx, "test -f /lib/systemd/system/ssh.socket"); err == nil {
+				override := fmt.Sprintf(`[Socket]
+ListenStream=
+ListenStream=0.0.0.0:%d
+ListenStream=[::]:%d`, port, port)
+				if _, err := exec.Run(ctx, "mkdir -p /etc/systemd/system/ssh.socket.d"); err != nil {
+					return err
+				}
+				if err := exec.WriteFile(ctx, "/etc/systemd/system/ssh.socket.d/override.conf", []byte(override), 0644); err != nil {
+					return err
+				}
+				if _, err := exec.Run(ctx, "systemctl daemon-reload && systemctl restart ssh.socket && systemctl restart ssh"); err != nil {
+					// Clean up on failure
+					exec.Run(ctx, "rm -rf /etc/systemd/system/ssh.socket.d")
+					exec.Run(ctx, "rm -f /etc/ssh/sshd_config.d/99-bunkr.conf")
+					exec.Run(ctx, "systemctl daemon-reload && systemctl restart ssh.socket && systemctl restart ssh")
+					return err
+				}
+			} else {
+				// No socket activation, just restart the service
+				if _, err := exec.Run(ctx, "systemctl restart sshd 2>/dev/null || systemctl restart ssh"); err != nil {
+					return err
+				}
 			}
 
 			// Verify SSH is listening on the new port
 			if _, err := exec.Run(ctx, fmt.Sprintf("ss -tlnp | grep ':%d '", port)); err != nil {
-				// Restore backup if SSH didn't come up on new port
-				exec.Run(ctx, "cp /etc/ssh/sshd_config.bak /etc/ssh/sshd_config")
-				exec.Run(ctx, "systemctl restart sshd 2>/dev/null || systemctl restart ssh")
+				// Restore on failure
+				exec.Run(ctx, "rm -f /etc/ssh/sshd_config.d/99-bunkr.conf")
+				exec.Run(ctx, "rm -rf /etc/systemd/system/ssh.socket.d")
+				exec.Run(ctx, "systemctl daemon-reload && (systemctl restart ssh.socket 2>/dev/null; systemctl restart sshd 2>/dev/null || systemctl restart ssh)")
 				return fmt.Errorf("SSH not listening on port %d after restart, restored backup", port)
 			}
 

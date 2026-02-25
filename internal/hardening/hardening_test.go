@@ -17,7 +17,7 @@ func TestRunSteps_AllNew(t *testing.T) {
 
 	// Make all checks return "not applied"
 	mock.RunErrors["id bunkr"] = fmt.Errorf("no such user")
-	mock.RunErrors["grep -q '# bunkr-managed' /etc/ssh/sshd_config"] = fmt.Errorf("not found")
+	mock.RunErrors["test -f /etc/ssh/sshd_config.d/99-bunkr.conf"] = fmt.Errorf("not found")
 	mock.RunErrors["ufw status | grep -q 'Status: active'"] = fmt.Errorf("inactive")
 	mock.RunErrors["systemctl is-active fail2ban"] = fmt.Errorf("inactive")
 	mock.RunErrors["dpkg -l | grep -q unattended-upgrades"] = fmt.Errorf("not installed")
