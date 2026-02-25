@@ -19,6 +19,10 @@ var uninstallCmd = &cobra.Command{
 	Short: "Remove an installed app",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if err := requireRemote(); err != nil {
+			return err
+		}
+
 		ctx := context.Background()
 		name := args[0]
 

@@ -20,6 +20,10 @@ var installCmd = &cobra.Command{
 	Short: "Harden server and install app(s)",
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if err := requireRemote(); err != nil {
+			return err
+		}
+
 		ctx := context.Background()
 
 		// === PLAN PHASE (always local) ===

@@ -17,6 +17,10 @@ var updateCmd = &cobra.Command{
 	Short: "Update an installed app to the latest version",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if err := requireRemote(); err != nil {
+			return err
+		}
+
 		ctx := context.Background()
 		name := args[0]
 

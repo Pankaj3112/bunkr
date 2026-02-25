@@ -15,6 +15,10 @@ var statusCmd = &cobra.Command{
 	Use:   "status",
 	Short: "Show status of installed apps",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if err := requireRemote(); err != nil {
+			return err
+		}
+
 		ctx := context.Background()
 
 		exec, err := newExecutor()

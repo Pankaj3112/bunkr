@@ -3,6 +3,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/pankajbeniwal/bunkr/internal/executor"
@@ -18,6 +19,10 @@ var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Harden the server (no app install)",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if err := requireRemote(); err != nil {
+			return err
+		}
+
 		ctx := context.Background()
 		exec, err := newExecutor()
 		if err != nil {
@@ -58,4 +63,11 @@ func newExecutor() (executor.Executor, error) {
 		return executor.NewRemoteExecutor(onFlag)
 	}
 	return executor.NewLocalExecutor(), nil
+}
+
+func requireRemote() error {
+	if onFlag == "" {
+		return fmt.Errorf("--on flag is required (e.g., --on root@167.71.50.23)\n\nbunkr runs commands on a remote Linux server via SSH.\nIt should not be run locally on your machine.")
+	}
+	return nil
 }
