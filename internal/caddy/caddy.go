@@ -11,7 +11,28 @@ import (
 
 const CaddyfilePath = "/etc/caddy/Caddyfile"
 
+// initCaddyfile replaces the default Caddyfile with an empty bunkr-managed one
+func initCaddyfile(ctx context.Context, exec executor.Executor) error {
+	data, err := exec.ReadFile(ctx, CaddyfilePath)
+	if err != nil {
+		// No file yet, write empty one
+		return exec.WriteFile(ctx, CaddyfilePath, []byte("# Managed by bunkr\n"), 0644)
+	}
+	if !strings.Contains(string(data), "# Managed by bunkr") && !strings.Contains(string(data), "# bunkr:") {
+		// Default Caddyfile from fresh install — replace it
+		return exec.WriteFile(ctx, CaddyfilePath, []byte("# Managed by bunkr\n"), 0644)
+	}
+	return nil
+}
+
 func AddBlock(ctx context.Context, exec executor.Executor, name string, domain string, hostPort int) error {
+	if err := initCaddyfile(ctx, exec); err != nil {
+		return err
+	}
+
+	// Remove existing block for this recipe first (prevents duplicates on retry)
+	RemoveBlock(ctx, exec, name)
+
 	existing, err := exec.ReadFile(ctx, CaddyfilePath)
 	if err != nil {
 		existing = []byte{}
