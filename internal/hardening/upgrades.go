@@ -17,7 +17,7 @@ func UpgradesStep() Step {
 		},
 		Apply: func(ctx context.Context, exec executor.Executor) error {
 			cmds := []string{
-				"apt-get -o DPkg::Lock::Timeout=120 install -y unattended-upgrades",
+				"apt-get install -y unattended-upgrades",
 				"dpkg-reconfigure -f noninteractive unattended-upgrades",
 			}
 			for _, cmd := range cmds {

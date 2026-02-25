@@ -63,6 +63,9 @@ var installCmd = &cobra.Command{
 			return err
 		}
 
+		// Set system-wide apt lock timeout (fresh VPS often has apt running)
+		exec.Run(ctx, `echo 'DPkg::Lock::Timeout "120";' > /etc/apt/apt.conf.d/99-bunkr-lock-wait`)
+
 		s, err := state.Load(ctx, exec)
 		if err != nil {
 			return err

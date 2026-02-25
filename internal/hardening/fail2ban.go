@@ -17,7 +17,7 @@ func Fail2banStep() Step {
 		},
 		Apply: func(ctx context.Context, exec executor.Executor) error {
 			cmds := []string{
-				"apt-get -o DPkg::Lock::Timeout=120 install -y fail2ban",
+				"apt-get install -y fail2ban",
 				"systemctl enable fail2ban",
 				"systemctl start fail2ban",
 			}

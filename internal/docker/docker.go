@@ -20,8 +20,6 @@ func EnsureInstalled(ctx context.Context, exec executor.Executor) error {
 	if err == nil {
 		return nil
 	}
-	// Wait for all apt locks before running Docker install script (it uses apt internally)
-	exec.Run(ctx, "for i in $(seq 1 60); do if ! fuser /var/lib/dpkg/lock-frontend /var/lib/apt/lists/lock /var/cache/apt/archives/lock >/dev/null 2>&1; then exit 0; fi; sleep 2; done")
 	_, err = exec.Run(ctx, "curl -fsSL https://get.docker.com | sh")
 	if err != nil {
 		return fmt.Errorf("failed to install Docker: %w", err)
