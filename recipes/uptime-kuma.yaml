@@ -1,0 +1,20 @@
+name: uptime-kuma
+version: "1.23.11"
+description: Self-hosted uptime monitoring
+image: louislam/uptime-kuma:1.23.11
+
+prompts:
+  - key: DOMAIN
+    label: "Domain for Uptime Kuma"
+    required: true
+
+ports:
+  - 3001
+
+volumes:
+  - uptime_kuma_data:/app/data
+
+health_check:
+  url: "http://localhost:3001"
+  timeout: 30
+  interval: 2

@@ -1,0 +1,28 @@
+name: ghost
+version: "5.82.2"
+description: Professional publishing platform
+image: ghost:5.82.2
+
+prompts:
+  - key: DOMAIN
+    label: "Domain for Ghost"
+    required: true
+  - key: MAIL_FROM
+    label: "Email from address"
+    default: "noreply@example.com"
+
+ports:
+  - 2368
+
+volumes:
+  - ghost_content:/var/lib/ghost/content
+
+environment:
+  url: "https://${DOMAIN}"
+  database__client: sqlite3
+  database__connection__filename: /var/lib/ghost/content/data/ghost.db
+
+health_check:
+  url: "http://localhost:2368/ghost/api/v4/admin/site/"
+  timeout: 60
+  interval: 3

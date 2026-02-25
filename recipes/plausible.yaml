@@ -1,0 +1,42 @@
+name: plausible
+version: "2.0.0"
+description: Privacy-friendly web analytics
+image: ghcr.io/plausible/community-edition:v2.0.0
+
+prompts:
+  - key: DOMAIN
+    label: "Domain for Plausible"
+    required: true
+  - key: ADMIN_EMAIL
+    label: "Admin email"
+    required: true
+  - key: ADMIN_PASSWORD
+    label: "Admin password"
+    required: true
+    secret: true
+
+ports:
+  - 8000
+
+services:
+  - name: plausible_db
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_PASSWORD: "postgres"
+    volumes:
+      - plausible_db:/var/lib/postgresql/data
+  - name: plausible_events_db
+    image: clickhouse/clickhouse-server:24.3-alpine
+    volumes:
+      - plausible_events:/var/lib/clickhouse
+
+environment:
+  BASE_URL: "https://${DOMAIN}"
+  SECRET_KEY_BASE: "auto_generate_64"
+  DATABASE_URL: "postgres://postgres:postgres@plausible_db:5432/plausible"
+  CLICKHOUSE_DATABASE_URL: "http://plausible_events_db:8123/plausible_events"
+
+health_check:
+  url: "http://localhost:8000/api/health"
+  timeout: 60
+  interval: 3
