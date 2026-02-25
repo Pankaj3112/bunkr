@@ -13,7 +13,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const releasesURL = "https://api.github.com/repos/pankajbeniwal/bunkr/releases/latest"
+const releasesURL = "https://api.github.com/repos/Pankaj3112/bunkr/releases/latest"
 
 var selfUpdateCmd = &cobra.Command{
 	Use:   "self-update",

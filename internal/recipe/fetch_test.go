@@ -7,7 +7,7 @@ import (
 
 func TestBuildRecipeURL(t *testing.T) {
 	url := BuildRecipeURL("uptime-kuma", "")
-	expected := "https://raw.githubusercontent.com/pankajbeniwal/bunkr/main/recipes/uptime-kuma.yaml"
+	expected := "https://raw.githubusercontent.com/Pankaj3112/bunkr/main/recipes/uptime-kuma.yaml"
 	if url != expected {
 		t.Fatalf("expected %s, got %s", expected, url)
 	}
@@ -23,7 +23,7 @@ func TestBuildRecipeURL_Override(t *testing.T) {
 
 func TestBuildIndexURL(t *testing.T) {
 	url := BuildIndexURL("")
-	expected := "https://raw.githubusercontent.com/pankajbeniwal/bunkr/main/recipes/index.yaml"
+	expected := "https://raw.githubusercontent.com/Pankaj3112/bunkr/main/recipes/index.yaml"
 	if url != expected {
 		t.Fatalf("expected %s, got %s", expected, url)
 	}

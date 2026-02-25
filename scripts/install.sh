@@ -2,9 +2,9 @@
 set -e
 
 # Bunkr installer
-# Usage: curl -fsSL https://raw.githubusercontent.com/pankajbeniwal/bunkr/main/scripts/install.sh | sh
+# Usage: curl -fsSL https://raw.githubusercontent.com/Pankaj3112/bunkr/main/scripts/install.sh | sh
 
-REPO="pankajbeniwal/bunkr"
+REPO="Pankaj3112/bunkr"
 
 main() {
     # Detect OS

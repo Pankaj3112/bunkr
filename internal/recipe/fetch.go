@@ -11,7 +11,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const defaultBaseURL = "https://raw.githubusercontent.com/pankajbeniwal/bunkr/main/recipes"
+const defaultBaseURL = "https://raw.githubusercontent.com/Pankaj3112/bunkr/main/recipes"
 
 func BuildRecipeURL(name string, baseURL string) string {
 	base := defaultBaseURL
