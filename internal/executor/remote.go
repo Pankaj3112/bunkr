@@ -109,44 +109,50 @@ func parseTarget(target string) (user, host string) {
 
 func buildAuthMethods() ([]ssh.AuthMethod, error) {
 	var methods []ssh.AuthMethod
+	var keySigners []ssh.Signer
 
-	// Try SSH agent first
+	// Try default key files first (most reliable)
+	home, err := os.UserHomeDir()
+	if err == nil {
+		keyFiles := []string{
+			filepath.Join(home, ".ssh", "id_ed25519"),
+			filepath.Join(home, ".ssh", "id_rsa"),
+		}
+
+		for _, keyFile := range keyFiles {
+			key, err := os.ReadFile(keyFile)
+			if err != nil {
+				continue
+			}
+			signer, err := ssh.ParsePrivateKey(key)
+			if err != nil {
+				continue
+			}
+			keySigners = append(keySigners, signer)
+		}
+	}
+
+	// Try SSH agent, but only add it if it actually has keys
 	if sock := os.Getenv("SSH_AUTH_SOCK"); sock != "" {
 		conn, err := net.Dial("unix", sock)
 		if err == nil {
 			agentClient := agent.NewClient(conn)
-			methods = append(methods, ssh.PublicKeysCallback(agentClient.Signers))
+			signers, err := agentClient.Signers()
+			if err == nil && len(signers) > 0 {
+				methods = append(methods, ssh.PublicKeysCallback(agentClient.Signers))
+			} else {
+				conn.Close()
+			}
 		}
 	}
 
-	// Try default key files
-	home, err := os.UserHomeDir()
-	if err != nil {
-		if len(methods) > 0 {
-			return methods, nil
-		}
-		return nil, fmt.Errorf("cannot determine home directory: %w", err)
-	}
-
-	keyFiles := []string{
-		filepath.Join(home, ".ssh", "id_ed25519"),
-		filepath.Join(home, ".ssh", "id_rsa"),
-	}
-
-	for _, keyFile := range keyFiles {
-		key, err := os.ReadFile(keyFile)
-		if err != nil {
-			continue
-		}
-		signer, err := ssh.ParsePrivateKey(key)
-		if err != nil {
-			continue
-		}
+	// Add key file signers
+	for _, signer := range keySigners {
 		methods = append(methods, ssh.PublicKeys(signer))
 	}
 
 	if len(methods) == 0 {
-		return nil, fmt.Errorf("no SSH authentication methods available (tried agent and key files)")
+		return nil, fmt.Errorf("no SSH authentication methods available (tried agent and key files in ~/.ssh/)")
 	}
 
 	return methods, nil

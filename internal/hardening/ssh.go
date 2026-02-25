@@ -28,7 +28,7 @@ AllowUsers bunkr`, port)
 			if err := exec.WriteFile(ctx, "/etc/ssh/sshd_config.d/99-bunkr.conf", []byte(config), 0644); err != nil {
 				return err
 			}
-			if _, err := exec.Run(ctx, "systemctl restart sshd"); err != nil {
+			if _, err := exec.Run(ctx, "systemctl restart sshd 2>/dev/null || systemctl restart ssh"); err != nil {
 				return err
 			}
 			return nil
