@@ -18,6 +18,7 @@ type Recipe struct {
 	Volumes     []string          `yaml:"volumes"`
 	Services    []Service         `yaml:"services"`
 	Environment map[string]string `yaml:"environment"`
+	Command     string            `yaml:"command"`
 	HealthCheck *HealthCheck      `yaml:"health_check"`
 }
 
