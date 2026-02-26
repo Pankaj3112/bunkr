@@ -27,8 +27,8 @@ bunkr install uptime-kuma
 That's it. Bunkr will:
 
 1. Harden the server (SSH, firewall, fail2ban, kernel params, swap)
-2. Install Docker and Caddy
-3. Deploy the app with HTTPS via Caddy reverse proxy
+2. Install Docker and Caddy (or Tailscale for private apps)
+3. Deploy the app with HTTPS
 
 After hardening, bunkr tells you how to connect:
 
@@ -64,11 +64,16 @@ For subsequent commands, you can use the hardened credentials, or just keep usin
 
 ## Available apps
 
-| App | Description |
-|-----|-------------|
-| [uptime-kuma](https://github.com/louislam/uptime-kuma) | Uptime monitoring |
-| [ghost](https://ghost.org) | Publishing platform |
-| [plausible](https://plausible.io) | Privacy-friendly analytics |
+| App | Description | Access |
+|-----|-------------|--------|
+| [uptime-kuma](https://github.com/louislam/uptime-kuma) | Uptime monitoring | Public |
+| [ghost](https://ghost.org) | Publishing platform | Public |
+| [plausible](https://plausible.io) | Privacy-friendly analytics | Public |
+| [openclaw](https://openclaw.ai/) | Personal AI assistant | Private |
+
+**Public** apps are exposed to the internet with HTTPS via Caddy reverse proxy. You'll be prompted for a domain name during install.
+
+**Private** apps are only accessible over your [Tailscale](https://tailscale.com) network. During install, bunkr sets up Tailscale on the server and gives you an auth URL to connect it to your tailnet. The app is then available at `https://<server>.your-tailnet.ts.net`.
 
 ## What hardening does
 
@@ -96,7 +101,7 @@ Bunkr uses a two-phase execution model:
 On the server, each app gets:
 
 - A Docker Compose stack at `/opt/bunkr/<app>/`
-- A Caddy reverse proxy block for HTTPS
+- HTTPS via Caddy reverse proxy (public apps) or Tailscale Serve (private apps)
 - State tracked in `/etc/bunkr/state.json`
 
 ## Build from source
