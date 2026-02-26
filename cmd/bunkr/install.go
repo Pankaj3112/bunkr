@@ -186,6 +186,23 @@ var installCmd = &cobra.Command{
 				ui.Success("Caddy configured")
 			}
 
+			// Run init command (e.g. "openclaw setup") before starting
+			if r.InitCommand != "" {
+				ui.Info("Running init...")
+				if err := docker.RunInit(ctx, exec, r.Name, r.InitCommand); err != nil {
+					ui.Warn("Init command failed — continuing anyway")
+				}
+			}
+
+			// Run post-init commands (e.g. patching config files)
+			if len(r.PostInit) > 0 {
+				ui.Info("Running post-init...")
+				if err := docker.RunPostInit(ctx, exec, r.Name, r.PostInit); err != nil {
+					return fmt.Errorf("post-init failed for %s: %w", r.Name, err)
+				}
+				ui.Success("Post-init complete")
+			}
+
 			// Pull and start containers
 			ui.Info("Pulling image...")
 			if err := docker.ComposeUp(ctx, exec, r.Name); err != nil {

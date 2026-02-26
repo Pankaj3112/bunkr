@@ -17,7 +17,19 @@ prompts:
 ports:
   - 18789
 
-command: "gateway --bind lan --port 18789"
+command: "gateway --bind lan --port 18789 --allow-unconfigured"
+
+init_command: "setup"
+
+post_init:
+  - >-
+    jq '
+      .gateway.mode = "local" |
+      .gateway.auth.token = env.OPENCLAW_GATEWAY_TOKEN |
+      .gateway.controlUi.dangerouslyAllowHostHeaderOriginFallback = true |
+      .agents.defaults.model.primary = "anthropic/claude-sonnet-4-6"
+    ' /home/node/.openclaw/openclaw.json > /tmp/openclaw.json
+  - mv /tmp/openclaw.json /home/node/.openclaw/openclaw.json
 
 volumes:
   - openclaw_data:/home/node/.openclaw

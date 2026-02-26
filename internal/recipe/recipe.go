@@ -19,6 +19,8 @@ type Recipe struct {
 	Services    []Service         `yaml:"services"`
 	Environment map[string]string `yaml:"environment"`
 	Command     string            `yaml:"command"`
+	InitCommand string            `yaml:"init_command"`
+	PostInit    []string          `yaml:"post_init"`
 	HealthCheck *HealthCheck      `yaml:"health_check"`
 }
 
