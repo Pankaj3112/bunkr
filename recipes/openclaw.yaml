@@ -17,7 +17,7 @@ prompts:
 ports:
   - 18789
 
-command: "node dist/index.js gateway --bind lan --port 18789"
+command: "gateway --bind lan --port 18789"
 
 volumes:
   - openclaw_data:/home/node/.openclaw
