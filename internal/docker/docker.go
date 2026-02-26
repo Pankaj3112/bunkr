@@ -71,9 +71,10 @@ func RunPostInit(ctx context.Context, exec executor.Executor, recipe string, com
 		return fmt.Errorf("failed to write post-init script: %w", err)
 	}
 
-	// Run script inside container via bind-mount
+	// Run script inside container via bind-mount (--entrypoint overrides
+	// the image entrypoint so "sh" is executed directly)
 	cmd := fmt.Sprintf(
-		"docker compose -f %s run --rm --no-deps -v %s:/tmp/bunkr-post-init.sh:ro %s sh /tmp/bunkr-post-init.sh 2>&1",
+		"docker compose -f %s run --rm --no-deps --entrypoint sh -v %s:/tmp/bunkr-post-init.sh:ro %s /tmp/bunkr-post-init.sh 2>&1",
 		composePath(recipe), scriptPath, recipe,
 	)
 	_, err := exec.Run(ctx, cmd)
