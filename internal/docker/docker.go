@@ -28,6 +28,13 @@ func EnsureInstalled(ctx context.Context, exec executor.Executor) error {
 }
 
 func ComposeUp(ctx context.Context, exec executor.Executor, recipe string) error {
+	// Pull images first as a separate step so the up command doesn't block
+	// on a long download with no feedback.
+	pullCmd := fmt.Sprintf("docker compose -f %s pull 2>&1", composePath(recipe))
+	if _, err := exec.Run(ctx, pullCmd); err != nil {
+		return fmt.Errorf("failed to pull images: %w", err)
+	}
+
 	cmd := fmt.Sprintf("docker compose -f %s up -d", composePath(recipe))
 	_, err := exec.Run(ctx, cmd)
 	return err

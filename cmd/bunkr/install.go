@@ -186,7 +186,8 @@ var installCmd = &cobra.Command{
 				ui.Success("Caddy configured")
 			}
 
-			// Start containers
+			// Pull and start containers
+			ui.Info("Pulling image...")
 			if err := docker.ComposeUp(ctx, exec, r.Name); err != nil {
 				ui.Error("Failed to start containers")
 				ui.Info(fmt.Sprintf("  Run: docker compose -f %s/docker-compose.yml logs", dir))
