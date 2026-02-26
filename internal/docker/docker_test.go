@@ -30,12 +30,16 @@ func TestComposeUp(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if len(mock.Calls) != 1 {
-		t.Fatalf("expected 1 call, got %d", len(mock.Calls))
+	if len(mock.Calls) != 2 {
+		t.Fatalf("expected 2 calls (pull + up), got %d", len(mock.Calls))
 	}
-	cmd := mock.Calls[0].Args[0].(string)
-	if cmd != "docker compose -f /opt/bunkr/ghost/docker-compose.yml up -d" {
-		t.Fatalf("unexpected command: %s", cmd)
+	pullCmd := mock.Calls[0].Args[0].(string)
+	if pullCmd != "docker compose -f /opt/bunkr/ghost/docker-compose.yml pull 2>&1" {
+		t.Fatalf("unexpected pull command: %s", pullCmd)
+	}
+	upCmd := mock.Calls[1].Args[0].(string)
+	if upCmd != "docker compose -f /opt/bunkr/ghost/docker-compose.yml up -d" {
+		t.Fatalf("unexpected up command: %s", upCmd)
 	}
 }
 

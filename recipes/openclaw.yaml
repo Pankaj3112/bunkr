@@ -1,0 +1,46 @@
+name: openclaw
+version: "latest"
+description: Personal AI assistant with messaging integrations
+image: ghcr.io/phioranex/openclaw-docker:latest
+private: true
+
+prompts:
+  - key: ANTHROPIC_API_KEY
+    label: "Anthropic API key"
+    required: true
+    secret: true
+  - key: OPENCLAW_GATEWAY_TOKEN
+    label: "Gateway token (for client auth)"
+    required: true
+    secret: true
+
+ports:
+  - 18789
+
+command: "gateway --bind lan --port 18789 --allow-unconfigured"
+
+init_command: "setup"
+
+post_init:
+  - >-
+    jq '
+      .gateway.mode = "local" |
+      .gateway.auth.token = env.OPENCLAW_GATEWAY_TOKEN |
+      .gateway.controlUi.dangerouslyAllowHostHeaderOriginFallback = true |
+      .agents.defaults.model.primary = "anthropic/claude-sonnet-4-6"
+    ' /home/node/.openclaw/openclaw.json > /tmp/openclaw.json
+  - mv /tmp/openclaw.json /home/node/.openclaw/openclaw.json
+
+volumes:
+  - openclaw_data:/home/node/.openclaw
+
+environment:
+  HOME: "/home/node"
+  TERM: "xterm-256color"
+  ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY}"
+  OPENCLAW_GATEWAY_TOKEN: "${OPENCLAW_GATEWAY_TOKEN}"
+
+health_check:
+  url: "http://localhost:18789"
+  timeout: 60
+  interval: 3

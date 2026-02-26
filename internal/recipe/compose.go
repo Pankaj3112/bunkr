@@ -15,6 +15,7 @@ type composeFile struct {
 
 type composeService struct {
 	Image       string            `yaml:"image"`
+	Command     string            `yaml:"command,omitempty"`
 	Ports       []string          `yaml:"ports,omitempty"`
 	Volumes     []string          `yaml:"volumes,omitempty"`
 	Environment map[string]string `yaml:"environment,omitempty"`
@@ -31,6 +32,7 @@ func GenerateCompose(r *Recipe, values map[string]string, hostPort int) ([]byte,
 	// Primary service
 	primary := composeService{
 		Image:   r.Image,
+		Command: r.Command,
 		Restart: "unless-stopped",
 	}
 

@@ -12,11 +12,15 @@ type Recipe struct {
 	Version     string            `yaml:"version"`
 	Description string            `yaml:"description"`
 	Image       string            `yaml:"image"`
+	Private     bool              `yaml:"private"`
 	Prompts     []Prompt          `yaml:"prompts"`
 	Ports       []int             `yaml:"ports"`
 	Volumes     []string          `yaml:"volumes"`
 	Services    []Service         `yaml:"services"`
 	Environment map[string]string `yaml:"environment"`
+	Command     string            `yaml:"command"`
+	InitCommand string            `yaml:"init_command"`
+	PostInit    []string          `yaml:"post_init"`
 	HealthCheck *HealthCheck      `yaml:"health_check"`
 }
 

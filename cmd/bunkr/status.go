@@ -37,8 +37,8 @@ var statusCmd = &cobra.Command{
 		}
 
 		ui.Header("Installed apps")
-		fmt.Printf("\n  %-20s %-10s %-30s %-10s %s\n", "NAME", "VERSION", "DOMAIN", "PORT", "STATUS")
-		fmt.Printf("  %-20s %-10s %-30s %-10s %s\n", "----", "-------", "------", "----", "------")
+		fmt.Printf("\n  %-20s %-10s %-30s %-12s %-10s %s\n", "NAME", "VERSION", "DOMAIN", "ACCESS", "PORT", "STATUS")
+		fmt.Printf("  %-20s %-10s %-30s %-12s %-10s %s\n", "----", "-------", "------", "------", "----", "------")
 
 		for name, r := range s.Recipes {
 			status := "unknown"
@@ -46,7 +46,11 @@ var statusCmd = &cobra.Command{
 			if err == nil && len(statuses) > 0 {
 				status = statuses[0].Status
 			}
-			fmt.Printf("  %-20s %-10s %-30s %-10d %s\n", name, r.Version, r.Domain, r.Port, status)
+			access := "public"
+			if r.Private {
+				access = "tailscale"
+			}
+			fmt.Printf("  %-20s %-10s %-30s %-12s %-10d %s\n", name, r.Version, r.Domain, access, r.Port, status)
 		}
 		fmt.Println()
 
