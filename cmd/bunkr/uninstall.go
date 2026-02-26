@@ -8,6 +8,7 @@ import (
 	"github.com/pankajbeniwal/bunkr/internal/caddy"
 	"github.com/pankajbeniwal/bunkr/internal/docker"
 	"github.com/pankajbeniwal/bunkr/internal/state"
+	"github.com/pankajbeniwal/bunkr/internal/tailscale"
 	"github.com/pankajbeniwal/bunkr/internal/ui"
 	"github.com/spf13/cobra"
 )
@@ -48,15 +49,22 @@ var uninstallCmd = &cobra.Command{
 		}
 		ui.Success("Containers stopped")
 
-		// Remove Caddy block
-		if err := caddy.RemoveBlock(ctx, exec, name); err != nil {
-			ui.Warn("Failed to remove Caddy config: " + err.Error())
-		}
-		ui.Success("Caddy config removed")
+		// Remove network config
+		rs := s.Recipes[name]
+		if rs.Private {
+			if err := tailscale.RemoveServe(ctx, exec, rs.Port); err != nil {
+				ui.Warn("Failed to remove Tailscale serve: " + err.Error())
+			}
+			ui.Success("Tailscale serve removed")
+		} else {
+			if err := caddy.RemoveBlock(ctx, exec, name); err != nil {
+				ui.Warn("Failed to remove Caddy config: " + err.Error())
+			}
+			ui.Success("Caddy config removed")
 
-		// Reload Caddy
-		if err := caddy.Reload(ctx, exec); err != nil {
-			ui.Warn("Caddy reload failed")
+			if err := caddy.Reload(ctx, exec); err != nil {
+				ui.Warn("Caddy reload failed")
+			}
 		}
 
 		// Remove directory

@@ -13,7 +13,14 @@ const StatePath = "/etc/bunkr/state.json"
 
 type State struct {
 	Hardening HardeningState         `json:"hardening"`
+	Tailscale TailscaleState         `json:"tailscale"`
 	Recipes   map[string]RecipeState `json:"recipes"`
+}
+
+type TailscaleState struct {
+	Installed bool   `json:"installed"`
+	Connected bool   `json:"connected"`
+	Hostname  string `json:"hostname"`
 }
 
 type HardeningState struct {
@@ -26,6 +33,7 @@ type HardeningState struct {
 type RecipeState struct {
 	Version       string    `json:"version"`
 	Domain        string    `json:"domain"`
+	Private       bool      `json:"private"`
 	InstalledAt   time.Time `json:"installed_at"`
 	Port          int       `json:"port"`
 	ContainerPort int       `json:"container_port"`

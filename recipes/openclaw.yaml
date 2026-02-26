@@ -1,0 +1,32 @@
+name: openclaw
+version: "latest"
+description: Personal AI assistant with messaging integrations
+image: openclaw/openclaw:latest
+private: true
+
+prompts:
+  - key: ANTHROPIC_API_KEY
+    label: "Anthropic API key"
+    required: true
+    secret: true
+  - key: OPENCLAW_GATEWAY_TOKEN
+    label: "Gateway token (for client auth)"
+    required: true
+    secret: true
+
+ports:
+  - 18789
+
+volumes:
+  - openclaw_data:/home/node/.openclaw
+
+environment:
+  ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY}"
+  OPENCLAW_GATEWAY_TOKEN: "${OPENCLAW_GATEWAY_TOKEN}"
+  OPENCLAW_GATEWAY_PORT: "18789"
+  OPENCLAW_GATEWAY_HOST: "0.0.0.0"
+
+health_check:
+  url: "http://localhost:18789"
+  timeout: 30
+  interval: 3

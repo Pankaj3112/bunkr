@@ -7,3 +7,6 @@
 - name: plausible
   description: Privacy-friendly web analytics
   version: "2.1.4"
+- name: openclaw
+  description: Personal AI assistant with messaging integrations
+  version: "latest"

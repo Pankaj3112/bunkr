@@ -12,6 +12,7 @@ type Recipe struct {
 	Version     string            `yaml:"version"`
 	Description string            `yaml:"description"`
 	Image       string            `yaml:"image"`
+	Private     bool              `yaml:"private"`
 	Prompts     []Prompt          `yaml:"prompts"`
 	Ports       []int             `yaml:"ports"`
 	Volumes     []string          `yaml:"volumes"`
