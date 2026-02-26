@@ -3,6 +3,7 @@ package tailscale
 import (
 	"context"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/pankajbeniwal/bunkr/internal/executor"
@@ -119,7 +120,7 @@ func TestIsConnected_RunError(t *testing.T) {
 
 func TestHostname(t *testing.T) {
 	mock := executor.NewMockExecutor()
-	mock.RunOutputs["tailscale status --json 2>/dev/null"] = `{"Self":{"DNSName":"myhost.tail1234.ts.net."}}`
+	mock.RunOutputs["tailscale status --json 2>/dev/null || true"] = `{"Self":{"DNSName":"myhost.tail1234.ts.net."}}`
 
 	hostname, err := Hostname(context.Background(), mock)
 	if err != nil {
@@ -132,7 +133,7 @@ func TestHostname(t *testing.T) {
 
 func TestHostname_NoDot(t *testing.T) {
 	mock := executor.NewMockExecutor()
-	mock.RunOutputs["tailscale status --json 2>/dev/null"] = `{"Self":{"DNSName":"myhost.tail1234.ts.net"}}`
+	mock.RunOutputs["tailscale status --json 2>/dev/null || true"] = `{"Self":{"DNSName":"myhost.tail1234.ts.net"}}`
 
 	hostname, err := Hostname(context.Background(), mock)
 	if err != nil {
@@ -143,19 +144,22 @@ func TestHostname_NoDot(t *testing.T) {
 	}
 }
 
-func TestHostname_RunError(t *testing.T) {
+func TestHostname_EmptyOutput(t *testing.T) {
 	mock := executor.NewMockExecutor()
-	mock.RunErrors["tailscale status --json 2>/dev/null"] = fmt.Errorf("exec failed")
+	mock.RunOutputs["tailscale status --json 2>/dev/null || true"] = ""
 
 	_, err := Hostname(context.Background(), mock)
 	if err == nil {
-		t.Fatal("expected error")
+		t.Fatal("expected error for empty output")
+	}
+	if !strings.Contains(err.Error(), "empty output") {
+		t.Fatalf("unexpected error message: %s", err.Error())
 	}
 }
 
 func TestHostname_InvalidJSON(t *testing.T) {
 	mock := executor.NewMockExecutor()
-	mock.RunOutputs["tailscale status --json 2>/dev/null"] = "not json"
+	mock.RunOutputs["tailscale status --json 2>/dev/null || true"] = "not json"
 
 	_, err := Hostname(context.Background(), mock)
 	if err == nil {
@@ -214,5 +218,8 @@ func TestRemoveServe_Error(t *testing.T) {
 	err := RemoveServe(context.Background(), mock, 8080)
 	if err == nil {
 		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "not running") {
+		t.Fatalf("expected wrapped error, got: %s", err.Error())
 	}
 }

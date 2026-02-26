@@ -54,13 +54,15 @@ var uninstallCmd = &cobra.Command{
 		if rs.Private {
 			if err := tailscale.RemoveServe(ctx, exec, rs.Port); err != nil {
 				ui.Warn("Failed to remove Tailscale serve: " + err.Error())
+			} else {
+				ui.Success("Tailscale serve removed")
 			}
-			ui.Success("Tailscale serve removed")
 		} else {
 			if err := caddy.RemoveBlock(ctx, exec, name); err != nil {
 				ui.Warn("Failed to remove Caddy config: " + err.Error())
+			} else {
+				ui.Success("Caddy config removed")
 			}
-			ui.Success("Caddy config removed")
 
 			if err := caddy.Reload(ctx, exec); err != nil {
 				ui.Warn("Caddy reload failed")

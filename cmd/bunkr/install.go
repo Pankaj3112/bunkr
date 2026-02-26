@@ -116,18 +116,16 @@ var installCmd = &cobra.Command{
 				if err != nil {
 					return err
 				}
-				s.Tailscale.Installed = true
-				s.Tailscale.Connected = true
 				s.Tailscale.Hostname = hostname
 			} else if s.Tailscale.Hostname == "" {
 				hostname, err := tailscale.Hostname(ctx, exec)
 				if err != nil {
 					return err
 				}
-				s.Tailscale.Installed = true
-				s.Tailscale.Connected = true
 				s.Tailscale.Hostname = hostname
 			}
+			s.Tailscale.Installed = true
+			s.Tailscale.Connected = true
 			ui.Success("Tailscale ready")
 		}
 

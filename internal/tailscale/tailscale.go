@@ -50,9 +50,10 @@ func IsConnected(ctx context.Context, exec executor.Executor) (bool, error) {
 
 // Hostname returns the MagicDNS hostname from tailscale status.
 func Hostname(ctx context.Context, exec executor.Executor) (string, error) {
-	out, err := exec.Run(ctx, "tailscale status --json 2>/dev/null")
-	if err != nil {
-		return "", fmt.Errorf("failed to get tailscale status: %w", err)
+	out, _ := exec.Run(ctx, "tailscale status --json 2>/dev/null || true")
+	out = strings.TrimSpace(out)
+	if out == "" {
+		return "", fmt.Errorf("failed to get tailscale status: empty output")
 	}
 	var status struct {
 		Self struct {
@@ -72,11 +73,14 @@ func Connect(ctx context.Context, exec executor.Executor) (string, error) {
 	// Kill any stale tailscale up processes from previous attempts
 	exec.Run(ctx, "pkill -f 'tailscale up' 2>/dev/null; sleep 1")
 	exec.Run(ctx, "rm -f /tmp/bunkr-ts-auth.log")
+	defer exec.Run(ctx, "rm -f /tmp/bunkr-ts-auth.log")
 
 	// Start tailscale up in a fully detached background process.
 	// Use setsid to create a new session so the process survives the SSH
 	// session closing, and redirect output to a log file for URL extraction.
-	exec.Run(ctx, "setsid tailscale up > /tmp/bunkr-ts-auth.log 2>&1 &")
+	if _, err := exec.Run(ctx, "setsid tailscale up > /tmp/bunkr-ts-auth.log 2>&1 &"); err != nil {
+		return "", fmt.Errorf("failed to start tailscale up: %w", err)
+	}
 
 	// Poll for the auth URL (appears almost immediately)
 	ui.Info("Waiting for Tailscale auth URL...")
@@ -106,10 +110,8 @@ func Connect(ctx context.Context, exec executor.Executor) (string, error) {
 			if err != nil {
 				return "", err
 			}
-			exec.Run(ctx, "rm -f /tmp/bunkr-ts-auth.log")
 			return hostname, nil
 		}
-		exec.Run(ctx, "rm -f /tmp/bunkr-ts-auth.log")
 		return "", fmt.Errorf("timed out waiting for Tailscale auth URL")
 	}
 
@@ -119,10 +121,8 @@ func Connect(ctx context.Context, exec executor.Executor) (string, error) {
 	ui.Info("")
 	ui.Info("Waiting for authentication...")
 
-	// Poll for connection (up to 300s for user to authenticate).
-	// Check both tailscale status and whether tailscale up has finished
-	// (tailscale up exits 0 once authentication and connection succeed).
-	for i := 0; i < 300; i++ {
+	// Poll for connection (up to 5 minutes for user to authenticate).
+	for i := 0; i < 150; i++ {
 		time.Sleep(2 * time.Second)
 		connected, _ := IsConnected(ctx, exec)
 		if connected {
@@ -130,12 +130,10 @@ func Connect(ctx context.Context, exec executor.Executor) (string, error) {
 			if err != nil {
 				return "", err
 			}
-			exec.Run(ctx, "rm -f /tmp/bunkr-ts-auth.log")
 			return hostname, nil
 		}
 	}
 
-	exec.Run(ctx, "rm -f /tmp/bunkr-ts-auth.log")
 	return "", fmt.Errorf("timed out waiting for Tailscale authentication (5 minutes)")
 }
 
