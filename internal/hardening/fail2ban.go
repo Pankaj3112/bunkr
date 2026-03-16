@@ -1,4 +1,3 @@
-// internal/hardening/fail2ban.go
 package hardening
 
 import (

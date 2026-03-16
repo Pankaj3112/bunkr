@@ -1,4 +1,3 @@
-// cmd/bunkr/update.go
 package main
 
 import (

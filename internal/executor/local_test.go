@@ -1,4 +1,3 @@
-// internal/executor/local_test.go
 package executor
 
 import (

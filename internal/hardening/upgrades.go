@@ -1,4 +1,3 @@
-// internal/hardening/upgrades.go
 package hardening
 
 import (

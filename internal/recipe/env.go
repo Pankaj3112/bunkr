@@ -1,4 +1,3 @@
-// internal/recipe/env.go
 package recipe
 
 import (
@@ -28,9 +27,9 @@ func ExpandAutoGenerate(env map[string]string) map[string]string {
 	for k, v := range env {
 		switch v {
 		case "auto_generate_32":
-			result[k] = randomHex(16) // 16 bytes = 32 hex chars
+			result[k] = randomHex(16)
 		case "auto_generate_64":
-			result[k] = randomHex(32) // 32 bytes = 64 hex chars
+			result[k] = randomHex(32)
 		default:
 			result[k] = v
 		}

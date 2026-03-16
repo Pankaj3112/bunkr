@@ -1,4 +1,3 @@
-// internal/state/state_test.go
 package state
 
 import (

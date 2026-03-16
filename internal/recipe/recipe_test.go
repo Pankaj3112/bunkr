@@ -1,4 +1,3 @@
-// internal/recipe/recipe_test.go
 package recipe
 
 import (

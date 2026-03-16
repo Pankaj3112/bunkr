@@ -1,4 +1,3 @@
-// internal/hardening/ssh.go
 package hardening
 
 import (

@@ -1,4 +1,3 @@
-// internal/hardening/hardening_test.go
 package hardening
 
 import (

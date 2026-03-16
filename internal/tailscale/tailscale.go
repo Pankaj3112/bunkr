@@ -1,4 +1,3 @@
-// internal/tailscale/tailscale.go
 package tailscale
 
 import (
@@ -63,7 +62,6 @@ func Hostname(ctx context.Context, exec executor.Executor) (string, error) {
 	if err := json.Unmarshal([]byte(out), &status); err != nil {
 		return "", fmt.Errorf("failed to parse tailscale status: %w", err)
 	}
-	// DNSName has a trailing dot, remove it
 	return strings.TrimSuffix(status.Self.DNSName, "."), nil
 }
 

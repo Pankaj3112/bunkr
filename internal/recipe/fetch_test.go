@@ -1,4 +1,3 @@
-// internal/recipe/fetch_test.go
 package recipe
 
 import (

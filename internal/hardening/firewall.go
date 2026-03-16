@@ -1,4 +1,3 @@
-// internal/hardening/firewall.go
 package hardening
 
 import (

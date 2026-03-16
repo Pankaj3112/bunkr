@@ -1,4 +1,3 @@
-// internal/recipe/prompt.go
 package recipe
 
 import (

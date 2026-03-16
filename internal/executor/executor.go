@@ -1,4 +1,3 @@
-// internal/executor/executor.go
 package executor
 
 import (

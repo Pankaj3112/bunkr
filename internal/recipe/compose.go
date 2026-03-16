@@ -1,4 +1,3 @@
-// internal/recipe/compose.go
 package recipe
 
 import (

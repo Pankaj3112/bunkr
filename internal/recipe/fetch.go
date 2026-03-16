@@ -1,4 +1,3 @@
-// internal/recipe/fetch.go
 package recipe
 
 import (
@@ -30,10 +29,7 @@ func BuildIndexURL(baseURL string) string {
 }
 
 func getBaseURL() string {
-	if url := os.Getenv("BUNKR_RECIPES_URL"); url != "" {
-		return url
-	}
-	return ""
+	return os.Getenv("BUNKR_RECIPES_URL")
 }
 
 func Fetch(name string) (*Recipe, error) {

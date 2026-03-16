@@ -1,4 +1,3 @@
-// internal/hardening/user.go
 package hardening
 
 import (

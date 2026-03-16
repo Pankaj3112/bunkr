@@ -1,4 +1,3 @@
-// cmd/bunkr/list.go
 package main
 
 import (

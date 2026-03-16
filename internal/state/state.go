@@ -1,4 +1,3 @@
-// internal/state/state.go
 package state
 
 import (
@@ -84,13 +83,4 @@ func (s *State) AllocatePort(desired int) int {
 		port++
 	}
 	return port
-}
-
-func (s *State) IsPortTaken(port int) bool {
-	for _, r := range s.Recipes {
-		if r.Port == port {
-			return true
-		}
-	}
-	return false
 }

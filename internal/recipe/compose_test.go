@@ -1,4 +1,3 @@
-// internal/recipe/compose_test.go
 package recipe
 
 import (

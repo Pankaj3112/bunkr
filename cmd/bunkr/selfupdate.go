@@ -1,4 +1,3 @@
-// cmd/bunkr/selfupdate.go
 package main
 
 import (

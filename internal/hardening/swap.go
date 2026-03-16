@@ -1,4 +1,3 @@
-// internal/hardening/swap.go
 package hardening
 
 import (

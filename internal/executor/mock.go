@@ -1,4 +1,3 @@
-// internal/executor/mock.go
 package executor
 
 import (

@@ -1,4 +1,3 @@
-// internal/executor/remote_test.go
 package executor
 
 import (

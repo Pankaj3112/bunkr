@@ -1,4 +1,3 @@
-// cmd/bunkr/main.go
 package main
 
 import "os"

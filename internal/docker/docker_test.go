@@ -1,4 +1,3 @@
-// internal/docker/docker_test.go
 package docker
 
 import (

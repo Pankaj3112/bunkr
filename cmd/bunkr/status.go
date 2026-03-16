@@ -1,4 +1,3 @@
-// cmd/bunkr/status.go
 package main
 
 import (

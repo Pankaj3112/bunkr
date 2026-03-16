@@ -1,4 +1,3 @@
-// internal/hardening/sysctl.go
 package hardening
 
 import (

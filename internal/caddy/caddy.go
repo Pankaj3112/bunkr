@@ -1,4 +1,3 @@
-// internal/caddy/caddy.go
 package caddy
 
 import (

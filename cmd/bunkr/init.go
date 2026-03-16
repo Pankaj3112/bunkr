@@ -1,4 +1,3 @@
-// cmd/bunkr/init.go
 package main
 
 import (
@@ -67,11 +66,9 @@ func init() {
 
 // extractHost returns just the hostname/IP from a target string like "root@167.71.50.23:22".
 func extractHost(target string) string {
-	// Strip user@
 	if idx := strings.Index(target, "@"); idx != -1 {
 		target = target[idx+1:]
 	}
-	// Strip :port
 	if host, _, err := net.SplitHostPort(target); err == nil {
 		return host
 	}

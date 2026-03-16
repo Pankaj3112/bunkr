@@ -1,4 +1,3 @@
-// cmd/bunkr/uninstall.go
 package main
 
 import (

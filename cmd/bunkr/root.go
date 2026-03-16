@@ -1,4 +1,3 @@
-// cmd/bunkr/root.go
 package main
 
 import (

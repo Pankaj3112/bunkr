@@ -1,4 +1,3 @@
-// internal/executor/remote.go
 package executor
 
 import (
