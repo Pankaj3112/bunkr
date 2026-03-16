@@ -73,7 +73,11 @@ func GenerateCompose(r *Recipe, values map[string]string, hostPort int) ([]byte,
 			Restart: "unless-stopped",
 		}
 		if len(svc.Environment) > 0 {
-			s.Environment = svc.Environment
+			svcEnv := make(map[string]string, len(svc.Environment))
+			for k, v := range svc.Environment {
+				svcEnv[k] = expandEnvValue(v, values)
+			}
+			s.Environment = svcEnv
 		}
 		if len(svc.Volumes) > 0 {
 			s.Volumes = svc.Volumes

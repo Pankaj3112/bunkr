@@ -54,7 +54,10 @@ var installCmd = &cobra.Command{
 				r.Environment = recipe.ExpandAutoGenerate(r.Environment)
 			}
 
-			plans = append(plans, planned{recipe: r, values: values})
+			// Build merged values: prompt answers + expanded auto-generated secrets
+			merged := recipe.MergeValues(values, r.Environment)
+
+			plans = append(plans, planned{recipe: r, values: merged})
 		}
 
 		// === EXECUTE PHASE (via executor) ===
@@ -246,6 +249,19 @@ var installCmd = &cobra.Command{
 		for _, p := range plans {
 			rs := s.Recipes[p.recipe.Name]
 			ui.Result(fmt.Sprintf("%s is running at https://%s", p.recipe.Name, rs.Domain))
+
+			// Show auto-generated secrets the user needs to save
+			if len(p.recipe.Display) > 0 {
+				var secrets []ui.KeyValue
+				for _, d := range p.recipe.Display {
+					if val, ok := p.values[d.Key]; ok {
+						secrets = append(secrets, ui.KeyValue{Label: d.Label, Value: val})
+					}
+				}
+				if len(secrets) > 0 {
+					ui.DisplaySecrets(secrets)
+				}
+			}
 		}
 
 		return nil

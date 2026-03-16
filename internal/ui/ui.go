@@ -43,6 +43,19 @@ func Result(msg string) {
 	fmt.Printf("\n  %s\n\n", green(msg))
 }
 
+type KeyValue struct {
+	Label string
+	Value string
+}
+
+func DisplaySecrets(vars []KeyValue) {
+	fmt.Printf("\n  %s\n", bold("Generated credentials:"))
+	for _, kv := range vars {
+		fmt.Printf("    %s: %s\n", kv.Label, cyan(kv.Value))
+	}
+	fmt.Printf("  %s\n\n", yellow("⚠ Save these values — they cannot be recovered later."))
+}
+
 func HardeningSummary(host string, sshPort int) {
 	fmt.Println()
 	fmt.Printf("  %s\n", bold("SSH access changed:"))

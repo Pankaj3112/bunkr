@@ -70,6 +70,7 @@ For subsequent commands, you can use the hardened credentials, or just keep usin
 | [ghost](https://ghost.org) | Publishing platform | Public |
 | [plausible](https://plausible.io) | Privacy-friendly analytics | Public |
 | [openclaw](https://openclaw.ai/) | Personal AI assistant | Private |
+| [n8n](https://n8n.io) | Workflow automation platform | Public |
 
 **Public** apps are exposed to the internet with HTTPS via Caddy reverse proxy. You'll be prompted for a domain name during install.
 

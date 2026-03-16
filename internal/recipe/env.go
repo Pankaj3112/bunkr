@@ -38,6 +38,17 @@ func ExpandAutoGenerate(env map[string]string) map[string]string {
 	return result
 }
 
+func MergeValues(promptValues, envValues map[string]string) map[string]string {
+	merged := make(map[string]string, len(promptValues)+len(envValues))
+	for k, v := range envValues {
+		merged[k] = v
+	}
+	for k, v := range promptValues {
+		merged[k] = v
+	}
+	return merged
+}
+
 func randomHex(n int) string {
 	b := make([]byte, n)
 	rand.Read(b)

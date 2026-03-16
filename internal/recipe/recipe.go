@@ -22,14 +22,21 @@ type Recipe struct {
 	InitCommand string            `yaml:"init_command"`
 	PostInit    []string          `yaml:"post_init"`
 	HealthCheck *HealthCheck      `yaml:"health_check"`
+	Display     []DisplayVar      `yaml:"display"`
 }
 
 type Prompt struct {
-	Key      string `yaml:"key"`
-	Label    string `yaml:"label"`
-	Required bool   `yaml:"required"`
-	Default  string `yaml:"default"`
-	Secret   bool   `yaml:"secret"`
+	Key      string   `yaml:"key"`
+	Label    string   `yaml:"label"`
+	Required bool     `yaml:"required"`
+	Default  string   `yaml:"default"`
+	Secret   bool     `yaml:"secret"`
+	Options  []string `yaml:"options"`
+}
+
+type DisplayVar struct {
+	Key   string `yaml:"key"`
+	Label string `yaml:"label"`
 }
 
 type Service struct {

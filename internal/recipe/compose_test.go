@@ -68,6 +68,45 @@ func TestGenerateCompose_MultiService(t *testing.T) {
 	}
 }
 
+func TestGenerateCompose_ServiceEnvExpansion(t *testing.T) {
+	r := &Recipe{
+		Name:  "n8n",
+		Image: "n8n:latest",
+		Ports: []int{5678},
+		Services: []Service{
+			{
+				Name:  "n8n_db",
+				Image: "postgres:16-alpine",
+				Environment: map[string]string{
+					"POSTGRES_PASSWORD": "${DB_PASS}",
+					"POSTGRES_USER":     "n8n",
+				},
+				Volumes: []string{"n8n_db:/var/lib/postgresql/data"},
+			},
+		},
+		Environment: map[string]string{
+			"DB_PASS": "secret123",
+		},
+	}
+	merged := map[string]string{
+		"DOMAIN":  "n8n.example.com",
+		"DB_PASS": "secret123",
+	}
+
+	out, err := GenerateCompose(r, merged, 5678)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	s := string(out)
+
+	if strings.Contains(s, "${DB_PASS}") {
+		t.Fatal("expected service env to be expanded, but found literal ${DB_PASS}")
+	}
+	if !strings.Contains(s, "secret123") {
+		t.Fatal("expected expanded password 'secret123' in service env")
+	}
+}
+
 func TestGenerateCompose_DifferentHostPort(t *testing.T) {
 	r := &Recipe{
 		Name:  "app",

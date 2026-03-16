@@ -10,3 +10,6 @@
 - name: openclaw
   description: Personal AI assistant with messaging integrations
   version: "latest"
+- name: n8n
+  description: Workflow automation platform
+  version: "2.12.2"

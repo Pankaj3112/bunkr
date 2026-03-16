@@ -1,0 +1,73 @@
+name: n8n
+version: "2.12.2"
+description: Workflow automation platform
+image: docker.n8n.io/n8nio/n8n:2.12.2
+
+prompts:
+  - key: DOMAIN
+    label: "Domain for n8n (e.g. n8n.example.com)"
+    required: true
+  - key: GENERIC_TIMEZONE
+    label: "Timezone"
+    options:
+      - UTC
+      - America/New_York
+      - America/Chicago
+      - America/Denver
+      - America/Los_Angeles
+      - America/Toronto
+      - America/Sao_Paulo
+      - Europe/London
+      - Europe/Berlin
+      - Europe/Paris
+      - Europe/Moscow
+      - Asia/Dubai
+      - Asia/Kolkata
+      - Asia/Shanghai
+      - Asia/Tokyo
+      - Asia/Singapore
+      - Australia/Sydney
+      - Pacific/Auckland
+    default: "UTC"
+
+ports:
+  - 5678
+
+volumes:
+  - n8n_data:/home/node/.n8n
+
+services:
+  - name: n8n_db
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: "n8n"
+      POSTGRES_PASSWORD: "${N8N_DB_PASSWORD}"
+      POSTGRES_DB: "n8n"
+    volumes:
+      - n8n_db:/var/lib/postgresql/data
+
+environment:
+  DB_TYPE: "postgresdb"
+  DB_POSTGRESDB_HOST: "n8n_db"
+  DB_POSTGRESDB_PORT: "5432"
+  DB_POSTGRESDB_DATABASE: "n8n"
+  DB_POSTGRESDB_USER: "n8n"
+  DB_POSTGRESDB_PASSWORD: "${N8N_DB_PASSWORD}"
+  N8N_DB_PASSWORD: "auto_generate_32"
+  N8N_ENCRYPTION_KEY: "auto_generate_64"
+  N8N_HOST: "${DOMAIN}"
+  N8N_PROTOCOL: "https"
+  N8N_PROXY_HOPS: "1"
+  WEBHOOK_URL: "https://${DOMAIN}/"
+  NODE_ENV: "production"
+  GENERIC_TIMEZONE: "${GENERIC_TIMEZONE}"
+  TZ: "${GENERIC_TIMEZONE}"
+
+display:
+  - key: N8N_ENCRYPTION_KEY
+    label: "Encryption Key"
+
+health_check:
+  url: "http://localhost:5678/healthz"
+  timeout: 60
+  interval: 3

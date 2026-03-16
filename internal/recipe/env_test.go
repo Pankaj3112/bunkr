@@ -23,6 +23,32 @@ func TestGenerateEnv(t *testing.T) {
 	}
 }
 
+func TestMergeValues(t *testing.T) {
+	prompt := map[string]string{
+		"DOMAIN": "example.com",
+	}
+	env := map[string]string{
+		"SECRET": "abc123",
+		"DOMAIN": "should-be-overridden",
+	}
+
+	merged := MergeValues(prompt, env)
+
+	if merged["DOMAIN"] != "example.com" {
+		t.Fatalf("expected prompt value to win, got %s", merged["DOMAIN"])
+	}
+	if merged["SECRET"] != "abc123" {
+		t.Fatalf("expected env value, got %s", merged["SECRET"])
+	}
+}
+
+func TestMergeValues_NilMaps(t *testing.T) {
+	merged := MergeValues(nil, nil)
+	if len(merged) != 0 {
+		t.Fatalf("expected empty map, got %d entries", len(merged))
+	}
+}
+
 func TestExpandAutoGenerate(t *testing.T) {
 	env := map[string]string{
 		"KEY":    "auto_generate_32",
